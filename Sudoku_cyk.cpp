@@ -457,15 +457,13 @@ int SolveDLX(const Board &board,const bool &allAnsFlag)
 int main(int argv,const char **argc)
 {
 	bool forceFlag=true;
-	#ifdef LOCAL
 	if(argv!=1)
 	{
 		freopen(argc[1],"r",stdin);
 		freopen("output.txt","w",stdout);
-		if(argc[2]=="-force")
+		if(argv>=3&&strcmp(argc[2],"-force")==0)
 			forceFlag=true;
 	}
-	#endif
 	int op;
 	scanf("%d",&op);
 	if(op==1)
