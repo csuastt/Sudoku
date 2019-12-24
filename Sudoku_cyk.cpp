@@ -107,14 +107,14 @@ struct Block
 //Column 244-324:Block i has number x.        (i*9+x-1)+244 
 struct DancingLinkX
 {
-	int l[5000],r[5000],u[5000],d[5000];
-	int row[5000],col[5000];
-	int rows;
-	int nodecnt;
-	Block rowBlock[5000];
-	DancingLinkX()
+	int l[5000],r[5000],u[5000],d[5000]; //Left, right, up, down pointers in the 2-dimension list.
+	int row[5000],col[5000];             //Pointers to the head of the row and head of the column(respectively).
+	int rows;                            //Quantity of rows in the 2-dimension list.
+	int nodecnt;                         //Quantity of nodes in the 2-dimension list.
+	Block rowBlock[5000];                //The information of nodes.
+	DancingLinkX()                       //Initialization.
 	{
-		memset(l,0,sizeof(l));
+		memset(l,0,sizeof(l));           //Clear the data.
 		memset(r,0,sizeof(r));
 		memset(u,0,sizeof(u));
 		memset(d,0,sizeof(d));
@@ -123,7 +123,7 @@ struct DancingLinkX
 		d[0]=0;
 		r[0]=1;
 		l[0]=COLUMNS;
-		for(int i=1;i<=COLUMNS;i++)
+		for(int i=1;i<=COLUMNS;i++)      //Initialize the columns.
 		{
 			u[i]=i;
 			d[i]=i;
@@ -135,38 +135,38 @@ struct DancingLinkX
 		rows=0;
 		nodecnt=COLUMNS+1;
 	}
-	int getNewNode()
+	int getNewNode()                     //Get a new node.
 	{
 		return nodecnt++;
 	}
-	void appendLine(const vector<int> &idx,const int &x,const int &y,const int &val)
+	void appendLine(const vector<int> &idx,const int &x,const int &y,const int &val) //Add a new line in the list.
 	{
 		rows++;
 		rowBlock[rows]=Block(x,y,val);
 		for(int i=0;i<idx.size();i++)
 		{
 			int cur=getNewNode();
-			if(i==0)
+			if(i==0)                   //First component.
 			{
 				l[cur]=cur;
 				r[cur]=cur;
 			}
-			else
+			else                       //Other components.
 			{
 				l[cur]=cur-1;
 				r[cur]=r[cur-1];
 				l[r[cur-1]]=cur;
 				r[cur-1]=cur;
 			}
-			d[cur]=idx[i];
+			d[cur]=idx[i];             //Update the up and down pointers.
 			u[cur]=u[idx[i]];
 			d[u[idx[i]]]=cur;
 			u[idx[i]]=cur;
-			row[cur]=rows;
+			row[cur]=rows;             //Initialize the information.
 			col[cur]=idx[i];
 		}
 	}
-	void removeColumn(const int &column)
+	void removeColumn(const int &column)     //"Remove" a column in the 2-dimension list.
 	{
 		l[r[column]]=l[column];
 		r[l[column]]=r[column];
@@ -177,7 +177,7 @@ struct DancingLinkX
 				d[u[j]]=d[j];
 			}
 	}
-	void recoverColumn(const int &column)
+	void recoverColumn(const int &column)    //"Recover" a column in the 2-dimension list.
 	{
 		l[r[column]]=column;
 		r[l[column]]=column;
@@ -189,12 +189,12 @@ struct DancingLinkX
 			}
 	}
 	int curAns[200];
-	void dance(int level,const bool &allAnsFlag)
+	void dance(int level,const bool &allAnsFlag)   //Main function
 	{
 		if(!allAnsFlag&&g_ans.size()>=2)
 			return;
 		int curColumn=r[HEAD];
-		if(curColumn==HEAD)
+		if(curColumn==HEAD)                        //All the columns have been covered -> a solution.
 		{
 			Board ans;
 			for(int i=1;i<level;i++)
@@ -205,17 +205,17 @@ struct DancingLinkX
 			g_ans.push_back(ans);
 			return;
 		}
-		removeColumn(curColumn);
+		removeColumn(curColumn);                   //Try the rows that covers the current column.
 		for(int i=d[curColumn];i!=curColumn;i=d[i])
 		{
-			curAns[level]=row[i];
-			for(int j=r[i];j!=i;j=r[j])
+			curAns[level]=row[i];                  //Save the answer.
+			for(int j=r[i];j!=i;j=r[j])            //Remove the conflicting rows.
 				removeColumn(col[j]);
 			dance(level+1,allAnsFlag);
-			for(int j=l[i];j!=i;j=l[j])
+			for(int j=l[i];j!=i;j=l[j])            //Recover the conflicting rows.
 				recoverColumn(col[j]);
 		}
-		recoverColumn(curColumn);
+		recoverColumn(curColumn);                  //Recover current column.
 	}
 };
 
@@ -241,7 +241,7 @@ int SolveDLX(const Board &board,const bool &allAnsFlag);
 Board GenerateFull();//Use to Generate a Full Sudoku board.
 
 Board GenerateSudoku(const Board &full,const int &solCnt);
-//If solCnt!=-1, generate a Sudoku with MORE THAN solCnt solution(s). (Maybe we'll change it to exact solCnt solution(s).TBD)
+//If solCnt!=-1, generate a Sudoku with MORE THAN solCnt solution(s). 
 //If solCnt==-1, please generate a Sudoku with ONLY ONE solution.
 //The Sudoku board returned should not contain more than 40 numbers.
 
@@ -263,7 +263,7 @@ Board GenerateFull()
 		vector<int> v;
 		for(int i=1;i<=9;i++)
 			v.push_back(i);
-		random_shuffle(v.begin(),v.end());
+		random_shuffle(v.begin(),v.end());   //Generate a random permutation of 1-9.
 		queue<int> q;
 		for(int i=0;i<9;i++)
 			q.push(v[i]);
@@ -274,13 +274,13 @@ Board GenerateFull()
 			while(!ret.check(r,i,now))
 			{
 				cnt++;
-				if(cnt>q.size())
+				if(cnt>q.size())              //No possible solutions.
 					goto ReGenerate;
 				q.pop();
 				q.push(now);
 				now=q.front();
 			}
-			q.pop();
+			q.pop();                          //Can put now here. Put it and try the next one.
 			ret.putNumber(r,i,now);
 		}
 	}
@@ -298,11 +298,11 @@ Board GenerateSudoku(const Board &full,const int &solCnt)
 		int cnt=0;
 		memset(checkflag,0,sizeof(checkflag));
 		ReErase:;
-		if(cnt>=ret.filled)
+		if(cnt>=ret.filled)                  //All the blocks have been tried, no more moves.
 			break;
 		int x=Rand()%9;
 		int y=Rand()%9;
-		while(ret[x][y]==0||checkflag[x][y])
+		while(ret[x][y]==0||checkflag[x][y]) //Find a block that hasn't been tried.
 		{
 			x=Rand()%9;
 			y=Rand()%9;
@@ -310,18 +310,18 @@ Board GenerateSudoku(const Board &full,const int &solCnt)
 		checkflag[x][y]=true;
 		int save=ret[x][y];
 		ret.eraseNumber(x,y);
-		if(solCnt==-1)
+		if(solCnt==-1)                       //Need only one solution!
 		{
-			if(Solve(ret,false)==-1)
+			if(Solve(ret,false)==MANY_SOLUTION)  //Mutiple solutions -> illegal.
 			{
 				ret.putNumber(x,y,save);
 				cnt++;
 				goto ReErase;
 			}
 		}
-		else
+		else                                 //Need more than solCnt solutions.
 		{
-			if(Solve(ret,true)>solCnt)
+			if(Solve(ret,true)>solCnt)       //Erase until more than solCnt solutions.
 				return ret;
 		}
 	}
@@ -332,7 +332,7 @@ Board GenerateSudoku(const Board &full,const int &solCnt)
 int Solve(const Board &board,const bool &allAnsFlag)
 {
 	Board tmp=board;
-	for(int i=0;i<9;i++)
+	for(int i=0;i<9;i++)                            //Have conflicts in the given Sudoku -> no solution.
 		for(int j=0;j<9;j++)
 			if(board[i][j]!=0)
 			{
@@ -341,8 +341,8 @@ int Solve(const Board &board,const bool &allAnsFlag)
 					return NO_SOLUTION;
 				tmp.putNumber(i,j,board[i][j]);
 			}
-	g_ans.clear();
-	Search(board,allAnsFlag);
+	g_ans.clear();                                  //Initialize.
+	Search(board,allAnsFlag);                       //Find the answers.
 	if(allAnsFlag)
 		return g_ans.size();
 	else
@@ -359,14 +359,14 @@ int Solve(const Board &board,const bool &allAnsFlag)
 /********* Function Search **********/
 void Search(const Board &board,const bool &allAnsFlag)
 {
-	if(!allAnsFlag&&g_ans.size()>=2)
+	if(!allAnsFlag&&g_ans.size()>=2)                 //Have found more than one solutions.
 		return;
-	if(board.filled==81)
+	if(board.filled==81)                             //Current sudoku is full -> a solution.
 	{
 		g_ans.push_back(board);
 		return;
 	}
-	int mn=10,mnx=0,mny=0;
+	int mn=10,mnx=0,mny=0;                           //Find the block with least possible choices.
 	for(int i=0;i<9;i++)
 		for(int j=0;j<9;j++)
 			if(board[i][j]==0)
@@ -384,7 +384,12 @@ void Search(const Board &board,const bool &allAnsFlag)
 			}
 	if(mn==10)
 		return;
-	Board next=board;
+	if(mn>1)                                          //All the other blocks have multiple choices, use DLX instead.
+	{
+		SolveDLX(board,allAnsFlag);
+		return;
+	}
+	Board next=board;                                 //Otherwise, find the only choice and put it in.
 	for(int i=1;i<=9;i++)
 		if(board.check(mnx,mny,i))
 		{
@@ -405,7 +410,7 @@ int SolveDLX(const Board &board,const bool &allAnsFlag)
 		for(int j=0;j<9;j++)
 		{
 			cur[0]=i*9+j+1;
-			if(board[i][j])
+			if(board[i][j])                                   //The block is with fixed number.
 			{
 				cur[1]=i*9+board[i][j]-1+82;
 				cur[2]=j*9+board[i][j]-1+163;
@@ -413,7 +418,7 @@ int SolveDLX(const Board &board,const bool &allAnsFlag)
 				cur[3]=block*9+board[i][j]-1+244;
 				solver.appendLine(cur,i,j,board[i][j]);
 			}
-			else
+			else                                              //The block is empty.
 			{
 				for(int k=1;k<=9;k++)
 					if(board.check(i,j,k))
@@ -444,42 +449,47 @@ int SolveDLX(const Board &board,const bool &allAnsFlag)
 //Mode 1:Input a single number 1.
 //Output a Sudoku with ONLY ONE solution.
 //The Sudoku board should not contain more than 40 numbers.
+
 //Mode 2:Input a number 2, following which is a Sudoku board.
 //If there is no solution for this Sudoku, output "No Solution"(without quote).
 //If there is ONLY ONE solution, output "OK"(without quote) and then output the solution.
 //If there is MORE THAN ONE solution, output "Multiple Solutions"(without quote) and then output 2 possible solutions separated by an empty line.
+
 //Mode 3: Give a file name.
 //Solve the input from the given file.
 //Output to "output.txt"(without quote).
-//Mode 4: Give a file name and a command "-force"(without quote).
-//Solve the input from the given file BY THE BRUTE FORCE ALGORITHM.
+
+//Mode 4: Give a file name and a command "-MoreModes"
+//Solve the input from the given file.
 //Output to "output.txt"(without quote).
+//In this mode, the solving program will find all the answers.
+//And the generating program will generate a Sudoku with more than given number of solutions.
 int main(int argv,const char **argc)
 {
-	bool forceFlag=true;
+	bool moreModesFlag=false;
 	if(argv!=1)
 	{
 		freopen(argc[1],"r",stdin);
 		freopen("output.txt","w",stdout);
-		if(argv>=3&&strcmp(argc[2],"-force")==0)
-			forceFlag=true;
+		if(argv>2&&strcmp(argc[2],"-MoreModes")==0)
+			moreModesFlag=true;
 	}
 	int op;
 	scanf("%d",&op);
 	if(op==1)
 	{
+		int requirements=-1;
+		if(moreModesFlag)
+			scanf("%d",&requirements); 
 		Board full=GenerateFull();
-		Board question=GenerateSudoku(full,-1);
+		Board question=GenerateSudoku(full,requirements);
 		question.print();
 	}
 	else
 	{
 		Board question;
 		question.read();
-		if(forceFlag)
-			Solve(question,false);
-		else
-			SolveDLX(question,false);
+		Solve(question,moreModesFlag);
 		if(g_ans.size()==0)
 			return puts("No_solution"),0;
 		else if(g_ans.size()>1)
