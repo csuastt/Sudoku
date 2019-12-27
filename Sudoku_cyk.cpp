@@ -491,7 +491,7 @@ int main(int argv, const char** argc)
 	{
 		Board question;
 		question.read();
-		if (question.filled >= 41)
+		if (question.filled >= 45)
 			forceFlag = true;
 		Solve(question, moreModesFlag, forceFlag);
 		if (g_ans.size() == 0)
